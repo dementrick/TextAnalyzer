@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Анализатор текстов</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" th:href="@{/style.css?v=123456}">
+<!--    <link rel="stylesheet" href="style.css">-->
+    <link href="https://fonts.cdnfonts.com/css/lato" rel="stylesheet">
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/lato');
+    </style>
+</head>
+<body>
+    <div class="desktop-1">
+        <div class="top-name">
+            <p class="top-name1">Анализатор текстов</p>
+        </div>
+        <div class="page-wrapper">
+            <div class="main-container">
+                <div class="div-analyze-text-on-zipf">
+                    <h1>Анализ текста на естественность</h1>
+                    <div class="custom-file-upload">
+                        <label for="fileInput1">Выбрать файл</label>
+                        <input type="file" id="fileInput1" accept=".txt">
+                    </div>
+                    <button onclick="analyzeFileAndSend()">Анализировать текст</button>
+                    <div class = "div-analyze-zipf-result" id="result">
+                        <div class="naturalness" id="naturalness"></div>
+                       <!-- <h2>Ключевые слова:</h2>
+                        <div id="wordGrid" class="word-grid"></div>-->
+                        <h2>График распределения</h2>
+                    </div>
+                </div>
+                <div class="similarity-analysis">
+                    <h1>Анализ текстов на схожесть</h1>
+                    <div class="custom-file-upload">
+                        <label for="fileInput2">Выбрать файл 1</label>
+                        <input type="file" id="fileInput2" accept=".txt">
+
+                        <label for="fileInput3">Выбрать файл 2</label>
+                        <input type="file" id="fileInput3" accept=".txt">
+                    </div>
+
+                    <button id="button-similarity" onclick="compareTexts()">Анализ</button>
+
+                    <div id="similarityResult" >
+                        <p>Сходство: <span id="cosineSimilarity"></span></p>
+                        <p>Интерпретация: <span id="interpretation"></span></p>
+                    </div>
+                </div>
+                <div class="classification">
+                    <h1>Классификация текста</h1>
+                    <div class="custom-file-upload">
+                        <label for="fileInput4">Выбрать файл</label>
+                        <input type="file" id="fileInput4" accept=".txt">
+                    </div>
+
+                    <button id="button-classification" onclick="classificationText()">Классифицировать</button>
+
+                    <div id="classificationResult">
+                        <p>Категория текста: <span id="categoryResult"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="render-word-grid">
+                <canvas id="zipfChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function analyzeFileAndSend() {
+            const fileInput = document.getElementById('fileInput1');
+            if (!fileInput.files.length) {
+                alert('Выберите файл .txt');
+                return;
+            }
+            const file = fileInput.files[0];
+            if (!file.name.endsWith('.txt')) {
+                alert('Файл должен быть формата .txt');
+                return;
+            }
+
+            const text = await file.text();
+
+            try {
+                const response = await fetch('/api/analyze/zipf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: text
+                });
+
+                if (!response.ok) {
+                    alert('Ошибка при анализе текста на сервере');
+                    return;
+                }
+
+                const result = await response.json();
+                renderResult(result);
+
+            } catch (error) {
+                alert('Ошибка сети или сервера: ' + error.message);
+            }
+        }
+
+        function renderResult(result) {
+            const sorted = result.wordFrequencies || [];
+            const naturalnessEl = document.getElementById('naturalness');
+            const naturalnessPercent = (result.naturalnessPercentage || 0).toFixed(2);
+            naturalnessEl.textContent = `Естественность текста: ${naturalnessPercent}%`;
+
+            /*const wordGrid = document.getElementById('wordGrid');
+            wordGrid.innerHTML = '';
+            sorted.forEach(({word, actualFrequency}) => {
+                const div = document.createElement('div');
+                div.textContent = `${word}`;
+                wordGrid.appendChild(div);
+            });*/
+            const top50 = sorted.slice(0, 50);
+
+            const labels = top50.map(({word}) => word);
+            const data = top50.map(({actualFrequency}) => actualFrequency);
+
+            const ctx = document.getElementById('zipfChart').getContext('2d');
+            if (window.zipfChartInstance) {
+                window.zipfChartInstance.destroy();
+            }
+
+            window.zipfChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Частота слов',
+                        data,
+                        backgroundColor: '#007BFF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#DCDCDC',
+                                font: {
+                                    size: 18,
+                                    family: "'Lato', sans-serif"
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(49,179,238,0.2)'
+                            },
+                            ticks: {
+                                color: '#DCDCDC',
+                                font: {
+                                    size: 15
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Слова',
+                                color: '#DCDCDC',
+                                font: {
+                                    size: 20
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(49,179,238,0.2)'
+                            },
+                            ticks: {
+                                color: '#DCDCDC',
+                                font: {
+                                    size: 15
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Частота',
+                                color: '#DCDCDC',
+                                font: {
+                                    size: 20
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById("result").style.display = "block";
+        }
+
+        async function compareTexts() {
+            const fileInput1 = document.getElementById('fileInput2');
+            const fileInput2 = document.getElementById('fileInput3');
+            const cosineSimElem = document.getElementById('cosineSimilarity');
+            const interpretationElem = document.getElementById('interpretation');
+
+            // Очистка результатов
+            cosineSimElem.textContent = '';
+            interpretationElem.textContent = '';
+
+            if (!fileInput1.files.length || !fileInput2.files.length) {
+                alert('Пожалуйста, выберите оба файла для сравнения.');
+                return;
+            }
+
+            try {
+                const text1 = await fileInput1.files[0].text();
+                const text2 = await fileInput2.files[0].text();
+
+                const requestBody = { text1, text2 };
+
+                const response = await fetch('/api/analyze/similarity', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка сервера: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                cosineSimElem.textContent = result.cosineSimilarity.toFixed(2) + '%';
+                interpretationElem.textContent = result.interpretation;
+
+                document.getElementById("similarityResult").style.display = "block";
+
+            } catch (error) {
+                alert('Ошибка при сравнении текстов: ' + error.message);
+            }
+        }
+
+        async function classificationText() {
+            const fileInput = document.getElementById('fileInput4');
+            const categoryResultEl = document.getElementById('categoryResult');
+
+            categoryResultEl.textContent = '';
+
+            if (!fileInput.files.length) {
+                alert('Выберите файл .txt');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (!file.name.endsWith('.txt')) {
+                alert('Файл должен быть формата .txt');
+                return;
+            }
+
+            try {
+                const text = await file.text();
+
+                const response = await fetch('/api/analyze/classify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: text
+                });
+
+                if (!response.ok) {
+                    alert('Ошибка при классификации текста на сервере');
+                    return;
+                }
+
+                const result = await response.json();
+                console.log(result)
+
+                categoryResultEl.textContent = result.interpretation || "Результат не получен";
+
+                document.getElementById("classificationResult").style.display = "block";
+
+            } catch (error) {
+                alert('Ошибка сети или сервера: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
