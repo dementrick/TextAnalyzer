@@ -20,7 +20,7 @@ public class ZipfAnalysisResult {
 
         List<ZipfWordFrequency> sortedFrequencies = wordFrequencies.stream()
                 .sorted((a, b) -> Double.compare(b.getActualFrequency(), a.getActualFrequency()))
-                .collect(Collectors.toList());
+                .toList();
 
         AtomicInteger rank = new AtomicInteger(1);
         return sortedFrequencies.stream()
