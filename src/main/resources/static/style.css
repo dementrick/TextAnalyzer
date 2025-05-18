@@ -69,6 +69,7 @@ h1 {
     padding: 0 5px 5px 10px;
     display: flex;
     flex-direction: column;
+    margin-left: 100px;
     align-items: flex-start;
     left: 54px;
     top: 170px;
@@ -160,7 +161,7 @@ button {
 .similarity-analysis {
     position: relative;
     flex: auto;
-    margin-left: 200px;
+    margin-left: 170px;
 }
 
 label[for="fileInput3"] {
@@ -214,7 +215,7 @@ label[for="fileInput3"] {
 .classification {
     position: relative;
     flex: auto;
-    right: 200px;
+    right: 170px;
     max-width: 500px;
 }
 

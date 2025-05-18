@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -44,11 +43,5 @@ public class TextAnalyzerController {
     public ResponseEntity<ClassificationResult> classifyText(@RequestBody String text) {
         ClassificationResult result = classificationService.classifyText(text);
         return ResponseEntity.ok(result);
-    }
-
-    @PostMapping("/addCategory")
-    public ResponseEntity<String> addTrainingText(@RequestParam String category, @RequestBody String text) {
-        classificationService.addTrainingText(category, text);
-        return ResponseEntity.ok("Текст добавлен для категории: " + category);
     }
 }
