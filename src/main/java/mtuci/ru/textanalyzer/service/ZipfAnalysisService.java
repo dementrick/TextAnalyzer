@@ -66,7 +66,39 @@ public class ZipfAnalysisService {
             wordFrequencies.add(new ZipfWordFrequency(labels.get(i), actualFreq.get(i), zipfFreq.get(i)));
         }
 
-        double naturalnessPercentage = 100 - (totalZipfError / totalWords * 100);
+        double naturalnessPercentage = getNatutalnessPercentage(text);
         return new ZipfAnalysisResult(wordFrequencies, naturalnessPercentage);
+    }
+
+    public double getNatutalnessPercentage(String text) {
+        text = text.toLowerCase().replaceAll("[^a-zA-Zа-яА-Я\\s]", "");
+        String[] words = text.split("\\s+");
+
+        Map<String, Integer> wordFrequency = new HashMap<>();
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                wordFrequency.put(word, wordFrequency.getOrDefault(word, 0) + 1);
+            }
+        }
+
+        List<Map.Entry<String, Integer>> sorted = new ArrayList<>(wordFrequency.entrySet());
+        sorted.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+
+        int limit = 100;
+        double baseFreq = sorted.get(0).getValue();
+        double totalZipfError = 0;
+        double totalWords = 0;
+        int rank = 1;
+
+        for (int i = 0; i < Math.min(sorted.size(), limit); i++) {
+            double freq = sorted.get(i).getValue();
+            double zipf = baseFreq / rank;
+
+            totalZipfError += Math.abs(freq - zipf);
+            totalWords += freq;
+            rank++;
+        }
+
+        return  100 - (totalZipfError / totalWords * 100);
     }
 }

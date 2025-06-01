@@ -41,7 +41,6 @@ public class TextClassificationService {
 
         String bestCategory = null;
         double bestMatchPercentage = 0.0;
-        int maxMatches = 0;
         int totalWords = inputWords.size();
 
         for (Map.Entry<String, TreeSet<WordEntry>> entry : categoryTrees.entrySet()) {
@@ -75,13 +74,13 @@ public class TextClassificationService {
 
     private String interpret(String category, double matchPercentage) {
         if (matchPercentage > 0.8) {
-            return "Текст точно относится к категории " + category ;
+            return "Текст относится к категории " + category ;
         }
         if (matchPercentage > 0.6) {
-            return "Скорее всего текст относится к категории " + category;
+            return "Текст, вероятно, относится к категории " + category;
         }
         if (matchPercentage > 0.3) {
-            return "Возможно текст относится к категории " + category;
+            return "Текст может относится к категории " + category;
         }
         return "Категория не определена";
     }
