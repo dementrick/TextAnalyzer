@@ -5,7 +5,6 @@
     <title>Анализатор текстов</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" th:href="@{/style.css?v=123456}">
-<!--    <link rel="stylesheet" href="style.css">-->
     <link href="https://fonts.cdnfonts.com/css/lato" rel="stylesheet">
     <style>
         @import url('https://fonts.cdnfonts.com/css/lato');
@@ -27,9 +26,6 @@
                     <button onclick="analyzeFileAndSend()">Анализировать текст</button>
                     <div class = "div-analyze-zipf-result" id="result">
                         <div class="naturalness" id="naturalness"></div>
-                       <!-- <h2>Ключевые слова:</h2>
-                        <div id="wordGrid" class="word-grid"></div>-->
-                        <h2>График распределения</h2>
                     </div>
                 </div>
                 <div class="similarity-analysis">
@@ -46,7 +42,7 @@
 
                     <div id="similarityResult" >
                         <p>Сходство: <span id="cosineSimilarity"></span></p>
-                        <p>Интерпретация: <span id="interpretation"></span></p>
+                        <p>Результат: <span id="interpretation"></span></p>
                     </div>
                 </div>
                 <div class="classification">
