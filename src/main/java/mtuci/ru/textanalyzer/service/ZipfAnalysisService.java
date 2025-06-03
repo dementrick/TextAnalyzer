@@ -70,7 +70,7 @@ public class ZipfAnalysisService {
         return new ZipfAnalysisResult(wordFrequencies, naturalnessPercentage);
     }
 
-    public double getNatutalnessPercentage(String text) {
+    private double getNatutalnessPercentage(String text) {
         text = text.toLowerCase().replaceAll("[^a-zA-Zа-яА-Я\\s]", "");
         String[] words = text.split("\\s+");
 
@@ -84,7 +84,7 @@ public class ZipfAnalysisService {
         List<Map.Entry<String, Integer>> sorted = new ArrayList<>(wordFrequency.entrySet());
         sorted.sort((a, b) -> b.getValue().compareTo(a.getValue()));
 
-        int limit = 100;
+        int limit = 300;
         double baseFreq = sorted.get(0).getValue();
         double totalZipfError = 0;
         double totalWords = 0;
